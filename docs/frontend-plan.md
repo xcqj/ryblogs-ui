@@ -20,7 +20,7 @@
 ## 2. 待办（按优先级）
 
 - [x] 清点并下线失效骨架：删除 `blogArticleTag`、`blogTagAlias` 的 views + api + types（2026-10-03）
-- [ ] 管理员治理页 · 文章：`/blog/admin/articles` 列表 + 下线 / 恢复动作（`blog:article:*`）
+- [x] 管理员治理页 · 文章：`/blog/admin/articles` 列表 + 下线 / 恢复动作（`blog:article:*`）（2026-10-04 代码完成，浏览器验收待 S10 收口）
 - [ ] 管理员治理页 · 标签：`/blog/admin/tags` rename / merge / 运营更新 / 删除（`blog:tag:*`）
 - [ ] 管理员治理页 · 评论：`/blog/admin/comments` 列表 + 逻辑删（`blog:comment:*`）
 - [ ] 作者功能：我的文章列表 / 详情、发文编辑器（复用 `/resource/oss/upload` 传图）、保存 / 发布 / hide / show / delete（`/blog/article/**`）
