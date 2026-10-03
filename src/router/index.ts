@@ -90,18 +90,27 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
-    // 博客发文/编辑：非侧栏页，由「我的文章」列表 router.push 进入；
-    // 用唯一路径前缀避免与后端菜单动态生成的 /blog/** 路径冲突（作者接口仅登录不设按钮权限）
+    // 作者「我的文章」：静态路由，非菜单驱动。契约 §17 作者接口“仅登录、不设按钮权限”，
+    // 天然对应“所有登录用户可见”的静态路由（constantRoutes 会进侧栏），
+    // 无需后端注册钩子/基线角色；用唯一前缀避免与后端菜单动态生成的 /blog/** 冲突。
     path: '/blog-article',
     component: Layout,
-    hidden: true,
-    redirect: 'noredirect',
+    redirect: '/blog-article/index',
+    meta: { title: '我的文章', icon: 'form' },
     children: [
       {
+        path: 'index',
+        component: () => import('@/views/blog/article/index.vue'),
+        name: 'BlogArticle',
+        meta: { title: '我的文章', icon: 'form' }
+      },
+      {
+        // 发文/编辑：非侧栏页，由列表 router.push 进入
         path: 'edit',
         component: () => import('@/views/blog/article/edit.vue'),
         name: 'BlogArticleEdit',
-        meta: { title: '写文章', activeMenu: '/blog/article' }
+        hidden: true,
+        meta: { title: '写文章', activeMenu: '/blog-article/index' }
       }
     ]
   }

@@ -205,7 +205,7 @@ const submit = (publish: boolean) => {
 };
 
 const handleBack = () => {
-  router.push({ path: '/blog/article' });
+  router.push({ path: '/blog-article/index' });
 };
 </script>
 
