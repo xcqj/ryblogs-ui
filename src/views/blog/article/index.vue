@@ -198,13 +198,13 @@ const { resetQuery } = useSearchReset<BlogArticleQuery>({
 
 /** 新增文章（跳转发文的编辑页，编辑页在 A2 落地） */
 const handleCreate = () => {
-  router.push({ path: '/blog/article/edit' });
+  router.push({ path: '/blog-article/edit' });
 };
 
 /** 编辑文章 */
 const handleEdit = (row: Partial<BlogArticleVO>) => {
   if (!row.articleId) return;
-  router.push({ path: '/blog/article/edit', query: { id: String(row.articleId) } });
+  router.push({ path: '/blog-article/edit', query: { id: String(row.articleId) } });
 };
 
 /** 发布 */

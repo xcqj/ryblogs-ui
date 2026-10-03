@@ -88,6 +88,22 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
+  },
+  {
+    // 博客发文/编辑：非侧栏页，由「我的文章」列表 router.push 进入；
+    // 用唯一路径前缀避免与后端菜单动态生成的 /blog/** 路径冲突（作者接口仅登录不设按钮权限）
+    path: '/blog-article',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'edit',
+        component: () => import('@/views/blog/article/edit.vue'),
+        name: 'BlogArticleEdit',
+        meta: { title: '写文章', activeMenu: '/blog/article' }
+      }
+    ]
   }
 ];
 
