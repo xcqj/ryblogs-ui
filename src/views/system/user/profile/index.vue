@@ -76,6 +76,9 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <userInfo :user="userForm" />
             </el-tab-pane>
+            <el-tab-pane label="博客资料" name="blogProfile" lazy>
+              <blogProfile />
+            </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <resetPwd />
             </el-tab-pane>
@@ -97,6 +100,7 @@ import { getOnline } from '@/api/monitor/online';
 import { getAuthList } from '@/api/system/social/auth';
 import { getUserProfile } from '@/api/system/user';
 import { UserVO } from '@/api/system/user/types';
+import BlogProfile from './blogProfile.vue';
 import OnlineDevice from './onlineDevice.vue';
 import ResetPwd from './resetPwd.vue';
 import ThirdParty from './thirdParty.vue';
