@@ -25,7 +25,7 @@
 - [x] 管理员治理页 · 评论：`/blog/admin/comments` 列表 + 逻辑删（`blog:comment:*`）（2026-10-04 代码完成，浏览器验收待 S10 收口）
 - [ ] 作者功能：我的文章列表 / 详情、发文编辑器（复用 `/resource/oss/upload` 传图）、保存 / 发布 / hide / show / delete（`/blog/article/**`）
 - [ ] 作者个人资料：`/blog/user/profile`（`/blog/user/**`）
-- [ ] 文章详情的历史版本只读子视图（`/blog/article` 侧，非独立 CRUD）
+- [x] 文章详情的历史版本只读子视图（`/blog/article` 侧，非独立 CRUD）（2026-10-04 以「我的文章」列表抽屉实现，§4.1 列表 + §4.2 快照只读；浏览器验收待 S10 收口）
 - [ ] 路由 / 菜单 / 权限标识与后端 s5/s6/s7 菜单 SQL 对齐
 - [ ] 浏览器验收（每页：正向 + 越权 + 参数校验）
 
