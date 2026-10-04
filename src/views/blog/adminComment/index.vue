@@ -53,8 +53,17 @@
         <el-table-column label="评论用户" align="center" prop="userName" width="140" show-overflow-tooltip />
         <el-table-column label="评论内容" align="left" prop="content" min-width="280" show-overflow-tooltip />
         <el-table-column label="评论时间" align="center" prop="createTime" width="180" />
-        <el-table-column label="操作" align="center" width="90" fixed="right" class-name="small-padding fixed-width">
+        <el-table-column label="操作" align="center" width="120" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">
+            <el-tooltip content="查看文章" placement="top">
+              <el-button
+                v-hasPermi="['blog:article:query']"
+                link
+                type="primary"
+                icon="Document"
+                @click="handleViewArticle(scope.row)"
+              ></el-button>
+            </el-tooltip>
             <el-tooltip content="删除" placement="top">
               <el-button
                 v-hasPermi="['blog:comment:remove']"
@@ -76,6 +85,9 @@
         @pagination="getList"
       />
     </el-card>
+
+    <!-- 文章详情 + 版本切换（共享组件，admin scope） -->
+    <ArticleDetailDrawer v-model="detailVisible" :article-id="detailArticleId" scope="admin" />
   </div>
 </template>
 
@@ -86,6 +98,7 @@ import { useLoading } from '@/hooks/async/useLoading';
 import { useSearchReset } from '@/hooks/form/useSearchReset';
 import { useSearchToggle } from '@/hooks/form/useSearchToggle';
 import modal from '@/plugins/modal';
+import ArticleDetailDrawer from '@/views/blog/components/ArticleDetailDrawer.vue';
 
 const commentList = ref<BlogAdminCommentVO[]>([]);
 const { loading, withLoading } = useLoading(true);
@@ -93,6 +106,15 @@ const { showSearch } = useSearchToggle();
 const total = ref(0);
 
 const queryFormRef = ref<ElFormInstance>();
+
+// 文章详情抽屉（共享组件）
+const detailVisible = ref(false);
+const detailArticleId = ref<string | number>();
+const handleViewArticle = (row: Partial<BlogAdminCommentVO>) => {
+  if (!row.articleId) return;
+  detailArticleId.value = row.articleId;
+  detailVisible.value = true;
+};
 
 const queryParams = ref<BlogAdminCommentQuery>({
   pageNum: 1,

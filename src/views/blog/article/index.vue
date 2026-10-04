@@ -79,8 +79,8 @@
             <el-tooltip v-if="canEdit(scope.row)" content="编辑" placement="top">
               <el-button link type="primary" icon="Edit" @click="handleEdit(scope.row)"></el-button>
             </el-tooltip>
-            <el-tooltip content="历史版本" placement="top">
-              <el-button link type="primary" icon="Clock" @click="openVersionDrawer(scope.row)"></el-button>
+            <el-tooltip content="文章详情/历史版本" placement="top">
+              <el-button link type="primary" icon="Document" @click="handleDetail(scope.row)"></el-button>
             </el-tooltip>
             <el-tooltip v-if="canPublish(scope.row)" content="发布" placement="top">
               <el-button link type="primary" icon="Promotion" @click="handlePublish(scope.row)"></el-button>
@@ -107,60 +107,8 @@
       />
     </el-card>
 
-    <!-- 历史版本只读子视图（契约 §4，append-only 快照，非独立 CRUD） -->
-    <el-drawer
-      v-model="versionDrawerVisible"
-      :title="'历史版本 · ' + (currentArticleTitle || '未命名草稿')"
-      size="65%"
-      direction="rtl"
-    >
-      <!-- 列表模式 -->
-      <div v-if="!versionDetail">
-        <el-table v-loading="versionLoading" border :data="versionList">
-          <el-table-column label="版本" width="120" align="center">
-            <template #default="scope">
-              <span>v{{ scope.row.versionNo }}</span>
-              <el-tag
-                v-if="String(scope.row.versionId) === String(currentVersionId)"
-                size="small"
-                type="success"
-                class="ml-1"
-              >
-                当前
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="标题" prop="title" min-width="200" show-overflow-tooltip />
-          <el-table-column label="创建时间" prop="createTime" width="170" align="center" />
-          <el-table-column label="操作" width="90" align="center">
-            <template #default="scope">
-              <el-button link type="primary" icon="View" @click="viewVersion(scope.row)">查看</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-      <!-- 详情模式（只读快照，正文用 Editor 只读渲染以还原 oss 图片） -->
-      <div v-else>
-        <div class="version-detail-head">
-          <h4>v{{ versionDetail.versionNo }} · {{ versionDetail.title }}</h4>
-          <el-button icon="Back" @click="backToVersionList">返回版本列表</el-button>
-        </div>
-        <el-descriptions :column="1" border size="small" class="mb-3">
-          <el-descriptions-item label="摘要">{{ versionDetail.summary || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="封面">
-            <el-image
-              v-if="versionDetail.coverUrl"
-              :src="versionDetail.coverUrl"
-              fit="cover"
-              style="width: 148px; height: 96px"
-            />
-            <span v-else>-</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ versionDetail.createTime }}</el-descriptions-item>
-        </el-descriptions>
-        <editor v-model="versionDetail.content" :read-only="true" :min-height="360" />
-      </div>
-    </el-drawer>
+    <!-- 文章详情 + 历史版本（共享组件，作者 scope 走 /blog/article） -->
+    <ArticleDetailDrawer v-model="detailVisible" :article-id="detailArticleId" scope="author" />
   </div>
 </template>
 
@@ -171,16 +119,14 @@ import {
   publishBlogArticle,
   hideBlogArticle,
   showBlogArticle,
-  delBlogArticle,
-  getBlogArticle,
-  listBlogArticleVersions,
-  getBlogArticleVersion
+  delBlogArticle
 } from '@/api/blog/article';
-import { BlogArticleVO, BlogArticleQuery, BlogArticleVersionVO } from '@/api/blog/article/types';
+import { BlogArticleVO, BlogArticleQuery } from '@/api/blog/article/types';
 import { useLoading } from '@/hooks/async/useLoading';
 import { useSearchReset } from '@/hooks/form/useSearchReset';
 import { useSearchToggle } from '@/hooks/form/useSearchToggle';
 import modal from '@/plugins/modal';
+import ArticleDetailDrawer from '@/views/blog/components/ArticleDetailDrawer.vue';
 
 /** 契约 §14 状态常量：status 0草稿 1已发布；visibility 0公开 1用户隐藏 2管理员下线 */
 const STATUS = { DRAFT: '0', PUBLISHED: '1' } as const;
@@ -304,43 +250,13 @@ const handleDelete = async (row: Partial<BlogArticleVO>) => {
   await getList();
 };
 
-/* ==================== 历史版本只读子视图（契约 §4） ==================== */
-const versionDrawerVisible = ref(false);
-const versionLoading = ref(false);
-const versionList = ref<BlogArticleVersionVO[]>([]);
-const currentVersionId = ref<string | number | undefined>();
-const currentArticleId = ref<string | number>();
-const currentArticleTitle = ref('');
-const versionDetail = ref<BlogArticleVersionVO | null>(null);
-
-/** 打开抽屉：拉版本列表（§4.1，不含 content）+ 详情拿当前生效版本ID 用于标记 */
-const openVersionDrawer = async (row: Partial<BlogArticleVO>) => {
+/* ==================== 文章详情 + 历史版本（共享组件） ==================== */
+const detailVisible = ref(false);
+const detailArticleId = ref<string | number>();
+const handleDetail = (row: Partial<BlogArticleVO>) => {
   if (!row.articleId) return;
-  currentArticleId.value = row.articleId;
-  currentArticleTitle.value = row.title || '';
-  versionDetail.value = null;
-  versionList.value = [];
-  currentVersionId.value = undefined;
-  versionDrawerVisible.value = true;
-  versionLoading.value = true;
-  try {
-    const [vRes, dRes] = await Promise.all([listBlogArticleVersions(row.articleId), getBlogArticle(row.articleId)]);
-    versionList.value = vRes.data || [];
-    currentVersionId.value = dRes.data?.currentVersion?.versionId;
-  } finally {
-    versionLoading.value = false;
-  }
-};
-
-/** 查看某历史版本：§4.2 才返回完整快照（含 content） */
-const viewVersion = async (row: Partial<BlogArticleVersionVO>) => {
-  if (!currentArticleId.value || !row.versionId) return;
-  const res = await getBlogArticleVersion(currentArticleId.value, row.versionId);
-  versionDetail.value = res.data;
-};
-
-const backToVersionList = () => {
-  versionDetail.value = null;
+  detailArticleId.value = row.articleId;
+  detailVisible.value = true;
 };
 
 // 首次进入 onMounted 加载；返回本页（keep-alive 复用）时 onActivated 刷新，修复“发布后列表不刷新”
@@ -356,16 +272,3 @@ onActivated(() => {
   getList();
 });
 </script>
-
-<style lang="scss" scoped>
-.version-detail-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-
-  h4 {
-    margin: 0;
-  }
-}
-</style>

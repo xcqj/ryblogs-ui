@@ -96,8 +96,17 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="140" fixed="right" class-name="small-padding fixed-width">
+        <el-table-column label="操作" align="center" width="180" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">
+            <el-tooltip content="查看详情" placement="top">
+              <el-button
+                v-hasPermi="['blog:article:query']"
+                link
+                type="primary"
+                icon="Document"
+                @click="handleDetail(scope.row)"
+              ></el-button>
+            </el-tooltip>
             <el-tooltip v-if="canHide(scope.row)" content="下线" placement="top">
               <el-button
                 v-hasPermi="['blog:article:adminHide']"
@@ -153,6 +162,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 文章详情 + 版本切换（共享组件，admin scope 走 /blog/admin/articles） -->
+    <ArticleDetailDrawer v-model="detailVisible" :article-id="detailArticleId" scope="admin" />
   </div>
 </template>
 
@@ -164,6 +176,7 @@ import { useDialogState } from '@/hooks/dialog/useDialogState';
 import { useSearchReset } from '@/hooks/form/useSearchReset';
 import { useSearchToggle } from '@/hooks/form/useSearchToggle';
 import modal from '@/plugins/modal';
+import ArticleDetailDrawer from '@/views/blog/components/ArticleDetailDrawer.vue';
 
 /** 契约 §14 状态常量：status 0=草稿 1=已发布；visibility 0=公开 1=用户隐藏 2=管理员下线 */
 const STATUS = { DRAFT: '0', PUBLISHED: '1' } as const;
@@ -211,6 +224,15 @@ const dateRangeCreateTime = ref<[string, string] | []>([]);
 const queryFormRef = ref<ElFormInstance>();
 const hideFormRef = ref<ElFormInstance>();
 const currentRow = ref<Partial<BlogAdminArticleVO>>();
+
+// 详情抽屉（共享组件）
+const detailVisible = ref(false);
+const detailArticleId = ref<string | number>();
+const handleDetail = (row: Partial<BlogAdminArticleVO>) => {
+  if (!row.articleId) return;
+  detailArticleId.value = row.articleId;
+  detailVisible.value = true;
+};
 
 const initHideForm: BlogAdminArticleHideForm = { reason: '' };
 const hideForm = ref<BlogAdminArticleHideForm>({ ...initHideForm });

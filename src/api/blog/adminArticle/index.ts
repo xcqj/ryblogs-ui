@@ -3,6 +3,7 @@ import type {
   BlogAdminArticleQuery,
   BlogAdminArticleVO
 } from '@/api/blog/adminArticle/types';
+import type { BlogArticleDetailVO } from '@/api/blog/article/types';
 import type { PageResult } from '@/api/types';
 import type { AxiosPromise } from '@/utils/api-types';
 import request from '@/utils/request';
@@ -16,6 +17,17 @@ export const listBlogAdminArticle = (query?: BlogAdminArticleQuery): AxiosPromis
     url: '/blog/admin/articles',
     method: 'get',
     params: query
+  });
+};
+
+/**
+ * 管理员文章详情（契约 §11.2，权限 blog:article:query）：完整当前状态 + 治理信息
+ * 与作者详情返回同一 BlogArticleDetailVo 结构，供共享详情组件复用
+ */
+export const getBlogAdminArticle = (articleId: string | number): AxiosPromise<BlogArticleDetailVO> => {
+  return request({
+    url: '/blog/admin/articles/' + articleId,
+    method: 'get'
   });
 };
 
