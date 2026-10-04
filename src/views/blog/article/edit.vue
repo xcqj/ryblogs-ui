@@ -225,7 +225,7 @@ const submit = (publish: boolean) => {
         modal.msgSuccess('发布成功');
         handleBack();
       } else {
-        modal.msgSuccess('已保存草稿');
+        modal.msgSuccess(loadedStatus.value === STATUS_PUBLISHED ? '已保存' : '已保存草稿');
       }
     } finally {
       buttonLoading.value = false;
