@@ -8,11 +8,22 @@
   >
     <div v-loading="loading" class="article-detail">
       <template v-if="detail">
+        <!-- 版本切换（置于信息块上方） -->
+        <div class="version-bar">
+          <span class="version-bar__label">查看版本</span>
+          <el-select v-model="viewingVersionId" style="width: 300px" @change="onVersionChange">
+            <el-option
+              v-for="v in versions"
+              :key="String(v.versionId)"
+              :label="versionLabel(v)"
+              :value="String(v.versionId)"
+            />
+          </el-select>
+          <span class="hint">共 {{ versions.length }} 个版本（只读快照，不可恢复）</span>
+        </div>
+
         <!-- 文章级元信息（不随版本变化） -->
         <el-descriptions :column="2" border size="small" class="mb-3">
-          <el-descriptions-item label="标题" :span="2">
-            {{ detail.currentVersion?.title || '(未命名草稿)' }}
-          </el-descriptions-item>
           <el-descriptions-item label="作者">{{ detail.authorName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag :type="detail.status === STATUS.PUBLISHED ? 'success' : 'info'">
@@ -41,23 +52,10 @@
           </template>
         </el-descriptions>
 
-        <!-- 版本切换 -->
-        <div class="version-bar">
-          <span class="version-bar__label">查看版本</span>
-          <el-select v-model="viewingVersionId" style="width: 260px" @change="onVersionChange">
-            <el-option
-              v-for="v in versions"
-              :key="String(v.versionId)"
-              :label="versionLabel(v)"
-              :value="String(v.versionId)"
-            />
-          </el-select>
-          <span class="hint">共 {{ versions.length }} 个版本（只读快照，不可恢复）</span>
-        </div>
-
-        <!-- 所选版本快照内容 -->
+        <!-- 所选版本快照内容（标题/摘要/封面/正文随版本变化） -->
         <div v-if="viewing" class="version-body">
           <el-descriptions :column="1" border size="small" class="mb-3">
+            <el-descriptions-item label="标题">{{ viewing.title || '(未命名草稿)' }}</el-descriptions-item>
             <el-descriptions-item label="摘要">{{ viewing.summary || '-' }}</el-descriptions-item>
             <el-descriptions-item label="封面">
               <el-image
@@ -69,7 +67,7 @@
               <span v-else>-</span>
             </el-descriptions-item>
           </el-descriptions>
-          <editor v-model="viewing.content" :read-only="true" :min-height="360" />
+          <editor :key="viewingVersionId" v-model="viewing.content" :read-only="true" :min-height="360" />
         </div>
       </template>
     </div>
