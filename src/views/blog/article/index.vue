@@ -343,7 +343,16 @@ const backToVersionList = () => {
   versionDetail.value = null;
 };
 
+// 首次进入 onMounted 加载；返回本页（keep-alive 复用）时 onActivated 刷新，修复“发布后列表不刷新”
+let skipFirstActivate = true;
 onMounted(() => {
+  getList();
+});
+onActivated(() => {
+  if (skipFirstActivate) {
+    skipFirstActivate = false;
+    return;
+  }
   getList();
 });
 </script>

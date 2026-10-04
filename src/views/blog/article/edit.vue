@@ -8,7 +8,7 @@
           </div>
           <div class="toolbar-actions">
             <el-button icon="Back" @click="handleBack">返回</el-button>
-            <el-button :loading="buttonLoading" type="info" plain @click="submit(false)">保存草稿</el-button>
+            <el-button :loading="buttonLoading" type="info" plain @click="submit(false)">{{ saveLabel }}</el-button>
             <el-button
               v-if="canPublishNow"
               :loading="buttonLoading"
@@ -45,7 +45,7 @@
             default-first-option
             :reserve-keyword="false"
             :multiple-limit="6"
-            placeholder="输入标签名后回车添加，1~6 个（新标签自动入库）"
+            placeholder="输入标签名后回车添加，1~6 个"
             style="width: 100%"
           />
         </el-form-item>
@@ -89,6 +89,7 @@ import { globalHeaders } from '@/utils/request';
 
 /** 契约 §14：status 0草稿 1已发布；visibility 2管理员下线 */
 const STATUS_DRAFT = '0';
+const STATUS_PUBLISHED = '1';
 const VISIBILITY_ADMIN_HIDDEN = '2';
 
 const route = useRoute();
@@ -104,6 +105,8 @@ const loadedVisibility = ref<string>('');
 const canPublishNow = computed(
   () => loadedStatus.value === STATUS_DRAFT && loadedVisibility.value !== VISIBILITY_ADMIN_HIDDEN
 );
+// 已发布文章再保存 = 生成新版本立即生效（非草稿），按钮文案随状态切换
+const saveLabel = computed(() => (loadedStatus.value === STATUS_PUBLISHED ? '保存' : '保存草稿'));
 
 const initForm: BlogArticleForm = { title: '', summary: '', coverUrl: '', content: '', tagNames: [] };
 const form = ref<BlogArticleForm>({ ...initForm, tagNames: [] });
@@ -171,10 +174,36 @@ const loadArticle = async (id: string | number) => {
   };
 };
 
-onMounted(() => {
-  if (articleId.value) {
-    loadArticle(articleId.value);
+/** 重置为「新增」空白态（清 keep-alive 缓存残留） */
+const resetToNew = () => {
+  form.value = { ...initForm, tagNames: [] };
+  loadedStatus.value = STATUS_DRAFT;
+  loadedVisibility.value = '';
+  nextTick(() => formRef.value?.clearValidate());
+};
+
+/** 依据当前路由参数决定：有 id 回填编辑、无 id 重置为新增（keep-alive 复用时必须重算） */
+const applyRoute = () => {
+  const id = route.query.id ? String(route.query.id) : undefined;
+  articleId.value = id;
+  if (id) {
+    loadArticle(id);
+  } else {
+    resetToNew();
   }
+};
+
+// 首次进入由 onMounted 处理；onActivated 在首次挂载后会紧跟触发一次，用标志跳过以免重复加载
+let skipFirstActivate = true;
+onMounted(() => {
+  applyRoute();
+});
+onActivated(() => {
+  if (skipFirstActivate) {
+    skipFirstActivate = false;
+    return;
+  }
+  applyRoute();
 });
 
 /* ==================== 提交 ==================== */
