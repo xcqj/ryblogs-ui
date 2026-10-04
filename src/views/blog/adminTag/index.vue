@@ -60,9 +60,12 @@
           </template>
         </el-table-column>
         <el-table-column label="展示顺序" align="center" prop="sortOrder" width="90" />
-        <el-table-column label="合并目标" align="center" width="100">
+        <el-table-column label="合并目标" align="center" min-width="140" show-overflow-tooltip>
           <template #default="scope">
-            <span>{{ scope.row.status === TAG_STATUS.MERGED ? scope.row.mergedInto : '-' }}</span>
+            <span v-if="scope.row.status === TAG_STATUS.MERGED">
+              {{ tagNameMap[String(scope.row.mergedInto)] || '#' + scope.row.mergedInto }}
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="创建时间" align="center" prop="createTime" width="170" />
@@ -154,7 +157,13 @@
 </template>
 
 <script setup name="BlogAdminTag" lang="ts">
-import { listBlogAdminTag, updateBlogTagOps, renameBlogTag, delBlogAdminTag } from '@/api/blog/adminTag';
+import {
+  listBlogAdminTag,
+  updateBlogTagOps,
+  renameBlogTag,
+  delBlogAdminTag,
+  getBlogAdminTag
+} from '@/api/blog/adminTag';
 import { BlogAdminTagVO, BlogAdminTagQuery, BlogTagOpsForm, BlogTagRenameForm } from '@/api/blog/adminTag/types';
 import { useLoading } from '@/hooks/async/useLoading';
 import { useDialogState } from '@/hooks/dialog/useDialogState';
@@ -177,6 +186,8 @@ const featuredOptions = [
 const statusLabel = (v: string) => statusOptions.find(o => o.value === v)?.label ?? v;
 
 const tagList = ref<BlogAdminTagVO[]>([]);
+// tagId→name 缓存：合并目标列展示目标标签名而非裸 ID
+const tagNameMap = reactive<Record<string, string>>({});
 const buttonLoading = ref(false);
 const { loading, withLoading } = useLoading(true);
 const { showSearch } = useSearchToggle();
@@ -212,6 +223,26 @@ const renameRules = {
 };
 const { dialog: renameDialog, openDialog: openRenameDialog } = useDialogState('重命名标签');
 
+/** 解析合并目标名称：先用当前页行种子，缺失的（跨页 MERGED 目标）按需拉详情补全 */
+const resolveTagNames = async (rows: BlogAdminTagVO[]) => {
+  rows.forEach(r => {
+    if (r.tagId) tagNameMap[String(r.tagId)] = r.name;
+  });
+  const missing = [
+    ...new Set(rows.filter(r => r.status === TAG_STATUS.MERGED && r.mergedInto).map(r => String(r.mergedInto)))
+  ].filter(id => !tagNameMap[id]);
+  await Promise.all(
+    missing.map(async id => {
+      try {
+        const res = await getBlogAdminTag(id);
+        if (res.data) tagNameMap[id] = res.data.name;
+      } catch {
+        /* 拉取失败则回落显示 ID，不阻断列表 */
+      }
+    })
+  );
+};
+
 /** 查询列表 */
 const getList = async () => {
   await withLoading(async () => {
@@ -219,6 +250,7 @@ const getList = async () => {
     tagList.value = res.data?.rows;
     total.value = res.data?.total;
   });
+  resolveTagNames(tagList.value);
 };
 
 /** 搜索 */
