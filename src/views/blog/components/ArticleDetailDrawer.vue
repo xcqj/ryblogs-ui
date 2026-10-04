@@ -160,19 +160,12 @@ watch(
   () => [props.modelValue, props.articleId] as const,
   ([visible, id]) => {
     if (visible && id) {
-      loadAll();
+      loadAll().catch(() => modal.msgError('文章详情加载失败（可能无权访问该文章的版本历史）'));
     } else if (!visible) {
       reset();
     }
   }
 );
-
-// 兜底：详情加载失败时给出提示（如非超管管理员越权访问版本接口）
-onMounted(() => {
-  if (props.modelValue && props.articleId) {
-    loadAll().catch(() => modal.msgError('文章详情加载失败'));
-  }
-});
 </script>
 
 <style lang="scss" scoped>
