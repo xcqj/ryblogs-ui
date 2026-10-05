@@ -71,7 +71,7 @@
         <el-table-column label="创建时间" align="center" prop="createTime" width="170" />
         <el-table-column label="操作" align="center" width="220" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">
-            <el-tooltip content="运营属性" placement="top">
+            <el-tooltip v-if="scope.row.status === TAG_STATUS.ACTIVE" content="运营属性" placement="top">
               <el-button
                 v-hasPermi="['blog:tag:edit']"
                 link
@@ -412,12 +412,15 @@ const submitMerge = async () => {
     return;
   }
   const target = activeTagOptions.value.find(t => String(t.tagId) === mergeTargetId.value);
+  const featuredNote =
+    currentTag.value?.isFeatured === FEATURED.YES ? '该标签为精选，合并后精选身份将转移到目标标签。' : '';
   await modal.confirm(
     '确认将【' +
       currentTag.value?.name +
       '】合并到【' +
       (target?.name || '') +
       '】？' +
+      featuredNote +
       '将迁移文章关系、去重、登记别名并展平历史链，操作不可逆。'
   );
   buttonLoading.value = true;
