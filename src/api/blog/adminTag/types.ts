@@ -81,3 +81,10 @@ export interface BlogTagRenameForm {
    */
   name: string;
 }
+
+/**
+ * 合并入参（契约 §13.5，对应 BlogTagMergeBo）：目标为当前 ACTIVE 标签
+ */
+export interface BlogTagMergeForm {
+  targetTagId: string | number;
+}

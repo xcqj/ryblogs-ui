@@ -69,7 +69,7 @@
           </template>
         </el-table-column>
         <el-table-column label="创建时间" align="center" prop="createTime" width="170" />
-        <el-table-column label="操作" align="center" width="180" fixed="right" class-name="small-padding fixed-width">
+        <el-table-column label="操作" align="center" width="220" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">
             <el-tooltip content="运营属性" placement="top">
               <el-button
@@ -87,6 +87,15 @@
                 type="primary"
                 icon="Edit"
                 @click="handleRename(scope.row)"
+              ></el-button>
+            </el-tooltip>
+            <el-tooltip v-if="scope.row.status === TAG_STATUS.ACTIVE" content="合并到其它标签" placement="top">
+              <el-button
+                v-hasPermi="['blog:tag:merge']"
+                link
+                type="primary"
+                icon="Connection"
+                @click="handleMerge(scope.row)"
               ></el-button>
             </el-tooltip>
             <el-tooltip v-if="scope.row.status === TAG_STATUS.ACTIVE" content="删除" placement="top">
@@ -153,6 +162,42 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 合并对话框（契约 §13.5，源→目标 ACTIVE，不可逆） -->
+    <el-dialog v-model="mergeDialog.visible" :title="mergeDialog.title" width="480px" append-to-body>
+      <el-form label-width="80px">
+        <el-form-item label="源标签">
+          <span>{{ currentTag?.name }}</span>
+        </el-form-item>
+        <el-form-item label="合并到">
+          <el-select
+            v-model="mergeTargetId"
+            filterable
+            :loading="mergeLoadingOptions"
+            placeholder="搜索并选择目标标签（仅正常状态）"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="t in activeTagOptions"
+              :key="String(t.tagId)"
+              :label="t.name + '（' + t.slug + '）'"
+              :value="String(t.tagId)"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <span class="text-gray-400">
+            合并后源标签置为「已合并」，其文章关系迁移到目标、旧名登记为别名，操作不可逆。
+          </span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button :loading="buttonLoading" type="primary" @click="submitMerge">确 定</el-button>
+          <el-button @click="mergeDialog.visible = false">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -161,6 +206,7 @@ import {
   listBlogAdminTag,
   updateBlogTagOps,
   renameBlogTag,
+  mergeBlogTag,
   delBlogAdminTag,
   getBlogAdminTag
 } from '@/api/blog/adminTag';
@@ -222,6 +268,12 @@ const renameRules = {
   ]
 };
 const { dialog: renameDialog, openDialog: openRenameDialog } = useDialogState('重命名标签');
+
+// 合并对话框（方案A：可搜索下拉选目标 ACTIVE 标签）
+const { dialog: mergeDialog, openDialog: openMergeDialog } = useDialogState('合并标签');
+const mergeTargetId = ref<string>('');
+const mergeLoadingOptions = ref(false);
+const activeTagOptions = ref<BlogAdminTagVO[]>([]);
 
 /** 解析合并目标名称：先用当前页行种子，缺失的（跨页 MERGED 目标）按需拉详情补全 */
 const resolveTagNames = async (rows: BlogAdminTagVO[]) => {
@@ -333,6 +385,50 @@ const handleDelete = async (row: Partial<BlogAdminTagVO>) => {
   await delBlogAdminTag(row.tagId);
   modal.msgSuccess('删除成功');
   await getList();
+};
+
+/** 打开合并对话框：加载可选目标（ACTIVE，排除源自身） */
+const handleMerge = async (row: Partial<BlogAdminTagVO>) => {
+  if (!row.tagId) return;
+  currentTag.value = row;
+  mergeTargetId.value = '';
+  activeTagOptions.value = [];
+  openMergeDialog('合并标签');
+  mergeLoadingOptions.value = true;
+  try {
+    const res = await listBlogAdminTag({ pageNum: 1, pageSize: 500, status: TAG_STATUS.ACTIVE });
+    activeTagOptions.value = (res.data?.rows || []).filter(t => String(t.tagId) !== String(row.tagId));
+  } finally {
+    mergeLoadingOptions.value = false;
+  }
+};
+
+/** 提交合并（契约 §13.5，事务六步不可逆，二次确认） */
+const submitMerge = async () => {
+  const sourceId = currentTag.value?.tagId;
+  if (!sourceId) return;
+  if (!mergeTargetId.value) {
+    modal.msgWarning('请选择要合并到的目标标签');
+    return;
+  }
+  const target = activeTagOptions.value.find(t => String(t.tagId) === mergeTargetId.value);
+  await modal.confirm(
+    '确认将【' +
+      currentTag.value?.name +
+      '】合并到【' +
+      (target?.name || '') +
+      '】？' +
+      '将迁移文章关系、去重、登记别名并展平历史链，操作不可逆。'
+  );
+  buttonLoading.value = true;
+  try {
+    await mergeBlogTag(sourceId, { targetTagId: mergeTargetId.value });
+    modal.msgSuccess('合并成功');
+    mergeDialog.visible = false;
+    await getList();
+  } finally {
+    buttonLoading.value = false;
+  }
 };
 
 onMounted(() => {

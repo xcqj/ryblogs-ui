@@ -1,4 +1,10 @@
-import type { BlogAdminTagQuery, BlogAdminTagVO, BlogTagOpsForm, BlogTagRenameForm } from '@/api/blog/adminTag/types';
+import type {
+  BlogAdminTagQuery,
+  BlogAdminTagVO,
+  BlogTagMergeForm,
+  BlogTagOpsForm,
+  BlogTagRenameForm
+} from '@/api/blog/adminTag/types';
 import type { PageResult } from '@/api/types';
 import type { AxiosPromise } from '@/utils/api-types';
 import request from '@/utils/request';
@@ -42,6 +48,17 @@ export const renameBlogTag = (tagId: string | number, data: BlogTagRenameForm) =
   return request({
     url: '/blog/admin/tags/' + tagId + '/rename',
     method: 'put',
+    data: data
+  });
+};
+
+/**
+ * 合并标签（契约 §13.5，权限 blog:tag:merge）：源标签关系迁移到目标，源置 MERGED，事务六步不可逆
+ */
+export const mergeBlogTag = (tagId: string | number, data: BlogTagMergeForm) => {
+  return request({
+    url: '/blog/admin/tags/' + tagId + '/merge',
+    method: 'post',
     data: data
   });
 };
