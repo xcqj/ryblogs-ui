@@ -2,13 +2,18 @@
   <div class="sidebar-logo-container" :class="{ collapse: collapse }">
     <transition :enter-active-class="animateConfig.logoAnimate.enter" mode="out-in">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo" />
-        <h1 v-else class="sidebar-title">
-          {{ title }}
-        </h1>
+        <!-- 品牌标：错位叠框（Stack）+ 前框发光（Depth），与 blog-web AppBrand.vue 同源；
+             内联 SVG 使描边色随侧栏深浅主题切换（<img> 会把颜色烤死） -->
+        <svg class="sidebar-logo" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect x="6" y="10" width="22" height="22" rx="6" :stroke="markBack" stroke-width="2.6" />
+          <rect x="12" y="6" width="22" height="22" rx="6" :stroke="markFront" stroke-width="2.6" />
+        </svg>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo" />
+        <svg class="sidebar-logo" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect x="6" y="10" width="22" height="22" rx="6" :stroke="markBack" stroke-width="2.6" />
+          <rect x="12" y="6" width="22" height="22" rx="6" :stroke="markFront" stroke-width="2.6" />
+        </svg>
         <h1 class="sidebar-title">
           {{ title }}
         </h1>
@@ -19,7 +24,6 @@
 
 <script setup lang="ts">
 import animateConfig from '@/animate';
-import logo from '@/assets/logo/logo.png';
 import { NavTypeEnum } from '@/enums/NavTypeEnum';
 import { useSettingsStore } from '@/store/modules/settings';
 
@@ -38,6 +42,14 @@ const isDarkSide = computed(() => !isTopNav.value && sideTheme.value === 'theme-
 const logoSurface = computed(() => (isDarkSide.value ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc'));
 const logoBorder = computed(() => (isDarkSide.value ? 'rgba(148, 163, 184, 0.12)' : '#e5e7eb'));
 const logoTextColor = computed(() => (isDarkSide.value ? '#f8fbff' : 'var(--app-text-title)'));
+
+/** 品牌标描边色（与 blog-web tokens.css 同值）：后框随侧栏深浅切换，前框为品牌黄 */
+const markBack = computed(() => (isDarkSide.value ? '#f4f1ea' : '#211e1c'));
+const markFront = computed(() => '#ffd500');
+/** 品牌标发光：blog-web 同款强度，深浅各自适配 */
+const markGlow = computed(() =>
+  isDarkSide.value ? 'drop-shadow(0 0 5px rgb(228 219 201 / 0.26))' : 'drop-shadow(0 0 5px rgb(47 44 37 / 0.2))'
+);
 </script>
 
 <style lang="scss" scoped>
@@ -76,11 +88,11 @@ const logoTextColor = computed(() => (isDarkSide.value ? '#f8fbff' : 'var(--app-
     & .sidebar-logo {
       width: 28px;
       height: 28px;
+      flex-shrink: 0;
       vertical-align: middle;
       margin-right: 0;
       margin-left: 0;
-      border-radius: 10px;
-      box-shadow: none;
+      filter: v-bind(markGlow);
     }
 
     & .sidebar-title {
