@@ -47,13 +47,6 @@
             </el-popover>
           </div>
         </el-tooltip>
-        <el-tooltip content="Github" effect="dark" placement="bottom">
-          <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
-        <el-tooltip :content="$t('navbar.document')" effect="dark" placement="bottom">
-          <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
-        </el-tooltip>
 
         <el-tooltip :content="$t('navbar.full')" effect="dark" placement="bottom">
           <screenfull id="screenfull" class="right-menu-item hover-effect" />
@@ -73,7 +66,7 @@
             <img :src="userStore.avatar" class="user-avatar" />
             <div class="avatar-meta">
               <span class="avatar-name">{{ displayName }}</span>
-              <span class="avatar-role">Workspace</span>
+              <span class="avatar-role">博客后台</span>
             </div>
             <el-icon class="avatar-arrow"><caret-bottom /></el-icon>
           </div>

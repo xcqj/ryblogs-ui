@@ -2,12 +2,12 @@
   <div class="register">
     <div class="register-shell">
       <section class="register-brand">
-        <span class="brand-pill">Plus UI Workspace</span>
-        <h1 class="brand-title">企业级后台管理系统</h1>
+        <span class="brand-pill">Stack Depth · Blog Admin</span>
+        <h1 class="brand-title">多作者技术博客的内容治理工作台</h1>
         <p class="brand-desc">
-          真正面向企业级的应用框架 组件化 模块化 轻耦合 高扩展 针对企业痛点 业界一流技术栈
+          面向多作者技术博客的内容平台后台：文章发布与版本留痕、标签合并与别名迁移，
           <br />
-          重写 RuoYi-Vue 所有功能 集成 Sa-Token、Mybatis-Plus、WarmFlow、SpringDoc、Hutool、OSS 定期同步。
+          评论巡检、登录与检索限流防护，平台级治理能力统一收口于此。
         </p>
         <div class="brand-highlights">
           <span v-for="item in highlights" :key="item" class="highlight-chip">{{ item }}</span>
@@ -23,9 +23,9 @@
       <el-form ref="registerRef" :model="registerForm" :rules="registerRules" class="register-form">
         <div class="title-box">
           <div>
-            <p class="eyebrow">Workspace Register</p>
+            <p class="eyebrow">Blog Admin Register</p>
             <h3 class="title">{{ title }}</h3>
-            <p class="subtitle">创建新的业务工作台账号，接入当前系统权限与登录体系。</p>
+            <p class="subtitle">注册后使用账号登录，进入 Stack Depth 博客内容治理工作台。</p>
           </div>
           <lang-select />
         </div>
@@ -101,7 +101,7 @@
     </div>
 
     <div class="el-register-footer">
-      <span>Copyright © 2018-{{ currentYear }} 疯狂的狮子Li All Rights Reserved.</span>
+      <span>Copyright © {{ currentYear }} Stack Depth · 博客管理后台 All Rights Reserved.</span>
     </div>
   </div>
 </template>
@@ -115,11 +115,11 @@ import { RegisterForm } from '@/api/types';
 const title = import.meta.env.VITE_APP_TITLE;
 const currentYear = new Date().getFullYear();
 const quickStats = [
-  { label: '细粒度权限管理', value: '动态权限控制' },
-  { label: '主流技术栈', value: '全栈技术集成' },
-  { label: 'UI样式', value: '卡片式' }
+  { label: '内容组织', value: '全局标签体系' },
+  { label: '文章版本', value: 'Append-only' },
+  { label: '平台防护', value: '限流 + 净化' }
 ];
-const highlights = ['技术栈全面升级', '动态菜单', '多主题布局', '深浅色主题'];
+const highlights = ['文章版本留痕', '标签合并治理', '评论巡检', '限流防护', '全文检索'];
 const router = useRouter();
 
 const { t } = useI18n();
