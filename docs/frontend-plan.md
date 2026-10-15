@@ -41,7 +41,9 @@
 
 > 与业务逻辑零关联，排核心亮点之后；视觉用 Impeccable skill 打磨，**必须按项目 token 体系重构**，不照抄默认样式（D39）。
 
-- [x] 登录页博客化改造：保留登录逻辑、验证码链路、**SocialCallback 路由**（框架社交回调页，S14 起可能被引用，勿随改版删除）（2026-10-15：品牌区/表单标题改为「Stack Depth · 博客管理后台」定位文案，quickStats/highlights 换为平台真实特性；脚本登录逻辑、验证码、社交登录、rememberMe、footer 一行未动；两个 .env 的 VITE_APP_TITLE 同步改为品牌名；另将 VITE_APP_LOGO_TITLE 改为「Stack Depth」统一侧栏 Logo 标题（logo.png 图片资产仍为框架默认图，如需替换属设计资产事项））
+- [x] 登录页博客化改造：保留登录逻辑、验证码链路、**SocialCallback 路由**（框架社交回调页，S14 起可能被引用，勿随改版删除）（2026-10-15：品牌区/表单标题改为「Stack Depth · 博客管理后台」定位文案，quickStats/highlights 换为平台真实特性；脚本登录逻辑、验证码、社交登录、rememberMe、footer 一行未动；两个 .env 的 VITE_APP_TITLE 同步改为品牌名；另将 VITE_APP_LOGO_TITLE 改为「Stack Depth」，且侧栏 Logo 由框架 logo.png 换为与 blog-web `AppBrand.vue` 同源的内联 SVG 品牌标（错位叠框 + 品牌黄前框，后框描边随侧栏深浅主题切换））
 - [x] 后台首页：博客数据概览（文章/评论/标签计数、待治理评论——调 `blog:article:list` 等已有接口）或静态欢迎页（S19 开工前拍板）（2026-10-15 拍板 A 数据概览并完成：6 张统计卡=文章总数/已发布/草稿/隐藏中（用户隐藏+管理员下线，hint 拆分）/评论总数/标签总数，全部调已有 blog:admin/** 接口 pageSize=1 读 total，零后端改动；`checkPermi` 预判 + 无权限降级提示条 + 单点失败「—」兜底；另加三层接口边界说明卡，纯文案无深链）
 - [x] 响应式 / 暗色保持与框架一致（2026-10-15：沿用 960/640 断点策略，样式全走 `--app-*` token 与 `--el-*` 桥接变量，暗色经 `html.dark` token 覆写；移除旧首页 28px 等魔法数字，圆角统一 `--app-radius-*`）
 - [x] 验收：浏览器验收（桌面 + 移动视口）；`vue-tsc` 0 错 + 构建通过；治理页/作者页无回归；不动权限与路由结构（三层 API 边界红线）（2026-10-15：agent 侧冒烟通过——浏览器真实登录成功、首页 6 卡拿到真实数据、登录页/首页/作者页/三治理页无控制台错误无 5xx、桌面+移动截图正常；WSL 无 CJK 字体的截图方框问题经 fontconfig 兜底规避；**人工视口/视觉验收待用户在 Windows 浏览器确认**）
+
+> 补充（2026-10-15 收尾，commit `c2d2c60`/`d841848`/`17d270a`）：品牌统一与框架痕迹清理——favicon 换 Stack Depth SVG 品牌标（`public/favicon.svg`，内置 `prefers-color-scheme` 深浅自适应，ico 保留兜底）；删除顶栏 Github/文档外链图标块及 `RuoYiGit`/`RuoYiDoc` 组件；登录/注册页页脚版权改为品牌方；注册页品牌文案对齐登录页；头像旁角色标签「Workspace」→「博客后台」；侧栏菜单「PLUS官网/测试菜单/AI会话/系统监控」由用户在后台菜单管理隐藏（可逆，未落 SQL）。
