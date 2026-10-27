@@ -30,6 +30,12 @@ html.dark {
   --w-e-modal-button-bg-color: var(--el-fill-color);
   --w-e-modal-button-border-color: var(--el-border-color);
 
+  // 代码块自带 text-shadow: 0 1px #fff（WangEditor 为亮色底做的文字浮雕感），
+  // 深色底上这层白影会变成刺眼的"发光/描边"。直接取消。
+  .w-e-text-container [data-slate-editor] pre > code {
+    text-shadow: none;
+  }
+
   // —— 代码块内的 prism token 色 ——
   // 亮色那套（#07a / #690 / #905）在 #303030 上对比度不足，换成 GitHub Dark
   .w-e-text-container [data-slate-editor] {
