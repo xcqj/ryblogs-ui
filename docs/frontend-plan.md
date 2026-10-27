@@ -49,3 +49,24 @@
 - [x] 验收：浏览器验收（桌面 + 移动视口）；`vue-tsc` 0 错 + 构建通过；治理页/作者页无回归；不动权限与路由结构（三层 API 边界红线）（2026-10-15：agent 侧冒烟通过——浏览器真实登录成功、首页 6 卡拿到真实数据、登录页/首页/作者页/三治理页无控制台错误无 5xx、桌面+移动截图正常；WSL 无 CJK 字体的截图方框问题经 fontconfig 兜底规避；**人工视口/视觉验收 2026-10-16 用户在 Windows 浏览器确认通过**）
 
 > 补充（2026-10-15 收尾，commit `c2d2c60`/`d841848`/`17d270a`）：品牌统一与框架痕迹清理——favicon 换 Stack Depth SVG 品牌标（`public/favicon.svg`，内置 `prefers-color-scheme` 深浅自适应，ico 保留兜底）；删除顶栏 Github/文档外链图标块及 `RuoYiGit`/`RuoYiDoc` 组件；登录/注册页页脚版权改为品牌方；注册页品牌文案对齐登录页；头像旁角色标签「Workspace」→「博客后台」；侧栏菜单「PLUS官网/测试菜单/AI会话/系统监控」由用户在后台菜单管理隐藏（可逆，未落 SQL）。
+
+## 5. 暗色模式编辑器代码块适配（2026-10-28）
+
+> 起因：用户验收 blog-web S24（正文语法高亮）后回看后台「查看版本」抽屉，发现暗色下代码块仍是白底。
+
+**现象**：暗色模式下，历史版本快照的代码块是近白底 + 亮色语法 token；把底色改深后，文字又带一圈白色发光。
+
+**根因**（两条都来自 WangEditor 自带样式，plus-ui 此前没有任何 `html.dark` 下的编辑器覆盖——全项目 `w-e-` 只有 `Editor/index.vue` 的三条布局规则）：
+
+1. 代码块底取 `--w-e-textarea-slight-bg-color`（默认 `#f5f2f0`），token 色是内置的 **prism 亮色主题**（`#07a` / `#690` / `#905`）。
+2. `pre > code` 写死 `text-shadow: 0 1px #fff`——为亮色底做的"文字浮雕"，深色底上就变成光晕/描边。
+
+**修法**：新增 `src/assets/styles/components/_editor-dark.scss`（经 `index.scss` 引入），**仅在 `html.dark` 内生效**：
+
+- 重定义 WangEditor 的 CSS 变量，值指向 Element Plus 暗色变量（`--el-bg-color` / `--el-fill-color` / `--el-text-color-*`），不写死色值，跟随后台既有主题体系；
+- 覆盖 prism token 色为 **GitHub Dark** 一套（keyword `#ff7b72` / string `#a5d6ff` / tag `#7ee787` / function `#d2a8ff` / variable `#ffa657` / number `#79c0ff` / comment `#8b949e`），与 blog-web 前台高亮同一口径；
+- `text-shadow: none`；代码块复制钮由白底改 `--el-bg-color-overlay`。
+
+**范围**：只影响暗色，浅色主题完全不动。覆盖对象是所有 WangEditor 实例（编辑页与只读的版本快照共用 `Editor` 组件）。
+
+**验证**：`npm run build` 0 error；产物确认含 `html.dark .w-e-text-container [data-slate-editor] .token.keyword{color:#ff7b72}` 与 `html.dark ... pre>code{text-shadow:none}`；用户实测暗色下代码块为深底 + 深色系 token、无白边。
