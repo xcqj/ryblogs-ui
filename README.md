@@ -1,76 +1,81 @@
-## 平台简介
+# Stack Depth · 博客管理后台
 
-- 本仓库为前端技术栈 [Vue3](https://v3.cn.vuejs.org) + [TS](https://www.typescriptlang.org/) + [Element Plus](https://element-plus.org/zh-CN) + [Vite](https://cn.vitejs.dev) 版本。
-- 官方项目: 基于 React + Ant Design 版本前端项目 [plus-ui-react](https://gitee.com/JavaLionLi/plus-ui/tree/6.X-React/)
-- 成员项目: 基于 vben5(ant-design-vue) 的前端项目 [ruoyi-plus-vben5](https://gitee.com/dapppp/ruoyi-plus-vben5)
-- 成员项目: 基于soybean 的前端项目 [ruoyi-plus-soybean](https://gitee.com/xlsea/ruoyi-plus-soybean)
+Vue 3 + TypeScript + Element Plus + Vite 的后台管理端，基于 RuoYi-Vue-Plus 前端，承担三类职责：
 
-## 配套后端代码仓库地址
+- **内容治理**：文章下线 / 恢复、评论审核与删除、标签运营（重命名 / 合并 / 精选 / 排序）
+- **作者功能**：我的文章、发文与编辑、历史版本查看（只读快照）
+- **系统管理**：用户、角色、菜单、字典等 RuoYi 原生能力
 
-| 介绍              | 项目名           | 项目地址                                                                                                                                                                       |
-| ----------------- | :--------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 🔥 分布式集群框架 | RuoYi-Vue-Plus   | - [Gitee](https://gitee.com/dromara/RuoYi-Vue-Plus)<br> - [GitHub](https://github.com/dromara/RuoYi-Vue-Plus)<br> - [GitCode](https://gitcode.com/dromara/RuoYi-Vue-Plus)      |
-| 🔥 微服务框架     | RuoYi-Cloud-Plus | - [Gitee](https://gitee.com/dromara/RuoYi-Cloud-Plus)<br>- [GitHub](https://github.com/dromara/RuoYi-Cloud-Plus)<br> - [GitCode](https://gitcode.com/dromara/RuoYi-Cloud-Plus) |
+> 读者站与作者中心在 [`blog-web`](../blog-web)，服务端在 [`RuoYi-Vue-Plus`](../RuoYi-Vue-Plus)。三仓必须同级 clone。
 
-## 分支说明
+## 与其他两仓的差异
 
-- 6.X分支(稳定发布主分支 生产可用)
-- dev分支(开发分支 开发过程中使用)
+| | plus-ui | blog-web |
+|---|---|---|
+| 使用者 | 管理员、有后台权限的作者 | 所有登录读者 / 作者 |
+| 上传接口 | `/resource/oss/upload`（需 `system:oss:upload`） | `/blog/oss/upload`（登录即可） |
+| API 基址 | 构建期常量 `VITE_APP_BASE_API` | 运行时 `NUXT_API_BASE` |
+| 鉴权 | token 在请求头，浏览器直连后端 | token 在 httpOnly cookie，Nitro 代注入 |
 
-## 前端运行
+上传接口分叉是刻意的：博客用户注册后默认零角色，复用后台接口会 403（ROADMAP D42）。
+
+## 部署（Docker）
 
 ```bash
-# 安装依赖
-pnpm install --registry=https://registry.npmmirror.com
-
-# 启动服务
-pnpm dev
-
-# 构建生产环境
-pnpm build:prod
-
-# 前端访问地址 http://localhost:80
+docker build -t sd-admin:local .
+docker run -d -p 8080:80 --network <后端所在网络> sd-admin:local
 ```
 
-## 本框架与RuoYi的业务差异
+一键起全套（含后端与前台）见后端仓 `script/docker/docker-compose.yml`。
 
-| 业务         | 功能说明                                                      | 本框架 | RuoYi                         |
-| ------------ | ------------------------------------------------------------- | ------ | ----------------------------- |
-| 用户管理     | 用户的管理配置 如:新增用户、分配用户所属部门、角色、岗位等    | 支持   | 支持                          |
-| 部门管理     | 配置系统组织机构（公司、部门、小组） 树结构展现支持数据权限   | 支持   | 支持                          |
-| 岗位管理     | 配置系统用户所属担任职务                                      | 支持   | 支持                          |
-| 菜单管理     | 配置系统菜单、操作权限、按钮权限标识等                        | 支持   | 支持                          |
-| 角色管理     | 角色菜单权限分配、设置角色按机构进行数据范围权限划分          | 支持   | 支持                          |
-| 字典管理     | 对系统中经常使用的一些较为固定的数据进行维护                  | 支持   | 支持                          |
-| 参数管理     | 对系统动态配置常用参数                                        | 支持   | 支持                          |
-| 通知公告     | 系统通知公告信息发布维护                                      | 支持   | 支持                          |
-| 操作日志     | 系统正常操作日志记录和查询 系统异常信息日志记录和查询         | 支持   | 支持                          |
-| 登录日志     | 系统登录日志记录查询包含登录异常                              | 支持   | 支持                          |
-| 文件管理     | 系统文件展示、上传、下载、删除等管理                          | 支持   | 无                            |
-| 文件配置管理 | 系统文件上传、下载所需要的配置信息动态添加、修改、删除等管理  | 支持   | 无                            |
-| 在线用户管理 | 已登录系统的在线用户信息监控与强制踢出操作                    | 支持   | 支持                          |
-| 定时任务     | 运行报表、任务管理(添加、修改、删除)、日志管理、执行器管理等  | 支持   | 仅支持任务与日志管理          |
-| 代码生成     | 多数据源前后端代码的生成（java、html、xml、sql）支持CRUD下载  | 支持   | 仅支持单数据源                |
-| 系统接口     | 根据业务代码自动生成相关的api接口文档                         | 支持   | 支持                          |
-| 服务监控     | 监视集群系统CPU、内存、磁盘、堆栈、在线日志、Spring相关配置等 | 支持   | 仅支持单机CPU、内存、磁盘监控 |
-| 缓存监控     | 对系统的缓存信息查询，命令统计等。                            | 支持   | 支持                          |
-| 在线构建器   | 拖动表单元素生成相应的HTML代码。                              | 支持   | 支持                          |
-| 使用案例     | 系统的一些功能案例                                            | 支持   | 不支持                        |
+**镜像内是 nginx + 静态产物**，配置在 [`deploy/nginx.conf`](deploy/nginx.conf)，两个契约点：
 
-## 演示图例
+1. `VITE_APP_BASE_API = '/prod-api'`（`.env.production`）→ nginx 用 `location /prod-api/` 反代，
+   `proxy_pass` 必须**剥离前缀**（用 `rewrite ^/prod-api/(.*)$ /$1 break`）；
+2. `VITE_APP_MESSAGE_TRANSPORT = 'sse'` → 反代要关 `proxy_buffering`，否则实时消息被缓冲。
 
-|                                                                                            |                                                                                            |
-|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| ![输入图片说明](https://foruda.gitee.com/images/1780299033689126697/868ef1ea_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299052163404649/8d94165d_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299074949590692/27f5bfb5_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299108816841231/619a7c57_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299089818500856/862ba805_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299173744267947/95cb0cd3_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299193694706123/28257dc1_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299147525013883/ebcd9dfe_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299220007761523/dc7e27c9_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299235966983519/35b047e1_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299250884681522/e5731314_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299267028602229/230d5428_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299293149732467/19abcf6c_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299311267192779/e665c668_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299327888096947/283a177f_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299348897579356/caac864e_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299376680669014/452585fb_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299843158459866/ceebbb63_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299432356918392/07abdf6a_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299465584172180/a2b2be12_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299491233431530/d88bfa35_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299513358913413/f2f90032_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299527419238776/549cb852_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299553918371792/43bd3bff_1766278.png "屏幕截图") |
-| ![输入图片说明](https://foruda.gitee.com/images/1780299586662735625/1107a3ee_1766278.png "屏幕截图") | ![输入图片说明](https://foruda.gitee.com/images/1780299613342135530/526d7859_1766278.png "屏幕截图") |
+反代用 `resolver 127.0.0.11` + 变量形式而非直接写死 upstream：nginx 只在启动时解析一次主机名，后端重启换 IP 会永久 502。
+
+## 本地开发
+
+```bash
+pnpm install
+pnpm dev          # http://localhost:5173，API 走 /dev-api（vite 代理到 8081）
+```
+
+```bash
+pnpm build        # 产出 dist/
+pnpm lint         # oxlint
+```
+
+`packageManager` 声明 pnpm 10.34.5，建议 `corepack enable` 后用 pnpm。
+**注意**：`overrides`（esbuild）与 `allowBuilds` 写在 `pnpm-workspace.yaml` 而不是 `package.json`，
+Docker 构建的依赖层必须一起 COPY，否则 `--frozen-lockfile` 报 `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`。
+
+## 目录结构
+
+```
+src/
+  ├── api/           接口封装（含 blog 域）
+  ├── components/    通用组件（Editor / ImageUpload / FileUpload ...）
+  ├── layouts/       布局（侧栏 / 顶栏 / 设置抽屉）
+  ├── views/
+  │   ├── blog/      ★ 博客域：adminArticle / adminComment / adminTag / article(作者)
+  │   └── system/    RuoYi 原生系统管理
+  ├── assets/styles/ 全局样式（tokens / theme-dark / components/_editor-dark.scss）
+  └── store/         Pinia
+deploy/nginx.conf    生产容器用的 nginx 配置
+Dockerfile           多阶段：node 构建 → nginx 运行
+```
+
+## 常见问题
+
+**登录后接口全 403**：检查 nginx 反代是否剥掉了 `/prod-api` 前缀（尾斜杠/rewrite）。后端收到的路径应是 `/auth/code` 而不是 `/prod-api/auth/code`。
+
+**改了 `.env.production` 不生效**：`VITE_*` 是**构建期**变量，必须重新 build 镜像。
+
+**暗色模式下代码块是白底**：`src/assets/styles/components/_editor-dark.scss` 覆盖了 WangEditor 的 17 个 CSS 变量与 prism token 色，若新增编辑器样式记得同步。
+
+## 致谢
+
+基于 [RuoYi-Vue-Plus](https://gitee.com/dromara/RuoYi-Vue-Plus)（Apache-2.0）前端。
