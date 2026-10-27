@@ -34,8 +34,10 @@
             <el-tag :type="visibilityTagType(detail.visibility)">{{ visibilityLabel(detail.visibility) }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="阅读量">{{ detail.viewCount ?? 0 }}</el-descriptions-item>
-          <el-descriptions-item label="首次发布">{{ detail.publishedAt || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ detail.updateTime || '-' }}</el-descriptions-item>
+          <!-- 时间项独占一行：19 字符的 yyyy-MM-dd HH:mm:ss 在 2 列布局里会被标签挤成断行
+               （实测显示成「2026-1/11 19:04:4」），审核时读不出完整时间 -->
+          <el-descriptions-item label="首次发布" :span="2">{{ detail.publishedAt || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间" :span="2">{{ detail.updateTime || '-' }}</el-descriptions-item>
           <el-descriptions-item label="标签" :span="2">
             <el-tag v-for="t in detail.tags || []" :key="String(t.tagId)" size="small" class="mr-1">
               {{ t.name }}

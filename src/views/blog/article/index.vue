@@ -72,6 +72,12 @@
           </template>
         </el-table-column>
         <el-table-column label="阅读量" align="center" prop="viewCount" width="80" />
+        <!-- 作者确认「这篇什么时候发的」不必再点进详情；治理页一直有此列，作者页原来缺失 -->
+        <el-table-column label="首次发布" align="center" prop="publishedAt" width="170">
+          <template #default="scope">
+            <span>{{ scope.row.publishedAt || '-' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="更新时间" align="center" prop="updateTime" width="170" />
         <el-table-column label="操作" align="center" width="260" fixed="right" class-name="small-padding fixed-width">
           <template #default="scope">

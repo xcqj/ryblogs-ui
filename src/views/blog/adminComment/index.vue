@@ -50,6 +50,13 @@
       <el-table v-loading="loading" border class="data-table" :data="commentList">
         <el-table-column label="评论ID" align="center" prop="commentId" width="110" />
         <el-table-column label="文章ID" align="center" prop="articleId" width="110" />
+        <!-- 审核时必须知道评论挂在哪篇文章下：原来只有 articleId，等于盲审。
+             标题由后端 BlogCommentListItemVo.articleTitle 批量回填，缺失时回落 #articleId -->
+        <el-table-column label="所属文章" align="left" prop="articleTitle" min-width="200" show-overflow-tooltip>
+          <template #default="scope">
+            <span>{{ scope.row.articleTitle || `#${scope.row.articleId}` }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="评论用户" align="center" prop="userName" width="140" show-overflow-tooltip />
         <el-table-column label="评论内容" align="left" prop="content" min-width="280" show-overflow-tooltip />
         <el-table-column label="评论时间" align="center" prop="createTime" width="180" />
