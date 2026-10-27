@@ -77,27 +77,6 @@
           </router-link>
         </div>
 
-        <div class="social-panel">
-          <span class="social-label">第三方登录</span>
-          <div class="social-actions">
-            <el-button circle :title="$t('login.social.wechat')" @click="doSocialLogin('wechat')">
-              <svg-icon icon-class="wechat" />
-            </el-button>
-            <el-button circle :title="$t('login.social.maxkey')" @click="doSocialLogin('maxkey')">
-              <svg-icon icon-class="maxkey" />
-            </el-button>
-            <el-button circle :title="$t('login.social.topiam')" @click="doSocialLogin('topiam')">
-              <svg-icon icon-class="topiam" />
-            </el-button>
-            <el-button circle :title="$t('login.social.gitee')" @click="doSocialLogin('gitee')">
-              <svg-icon icon-class="gitee" />
-            </el-button>
-            <el-button circle :title="$t('login.social.github')" @click="doSocialLogin('github')">
-              <svg-icon icon-class="github" />
-            </el-button>
-          </div>
-        </div>
-
         <el-form-item class="submit-row">
           <el-button :loading="loading" size="large" type="primary" class="submit-button" @click.prevent="handleLogin">
             <span v-if="!loading">{{ $t('login.login') }}</span>
@@ -117,9 +96,7 @@
 import { to } from 'await-to-js';
 import { useI18n } from 'vue-i18n';
 import { getCodeImg } from '@/api/login';
-import { authRouterUrl } from '@/api/system/social/auth';
 import { LoginData } from '@/api/types';
-import { HttpStatus } from '@/enums/RespEnum';
 import { useUserStore } from '@/store/modules/user';
 
 const title = import.meta.env.VITE_APP_TITLE;
@@ -230,16 +207,6 @@ const getLoginData = () => {
     password: username === null ? String(loginForm.value.password) : '',
     rememberMe: rememberMe === 'true'
   } as LoginData;
-};
-
-const doSocialLogin = (type: string) => {
-  authRouterUrl(type).then((res: any) => {
-    if (res.code === HttpStatus.SUCCESS) {
-      window.location.href = res.data;
-    } else {
-      ElMessage.error(res.msg);
-    }
-  });
 };
 
 onMounted(() => {
@@ -432,31 +399,6 @@ onMounted(() => {
   margin: -2px 0 18px;
 }
 
-.social-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  margin-bottom: 22px;
-  border-radius: 20px;
-  background: var(--app-elevated-soft-bg);
-  border: 1px solid var(--app-surface-border);
-}
-
-.social-label {
-  color: var(--app-text-muted);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.social-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
 .submit-row {
   margin-bottom: 0;
 }
@@ -561,15 +503,6 @@ onMounted(() => {
 
   .title-box {
     flex-direction: column;
-  }
-
-  .social-panel {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .social-actions {
-    justify-content: flex-start;
   }
 
   .captcha-row :deep(.el-form-item__content) {
