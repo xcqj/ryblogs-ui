@@ -1,0 +1,82 @@
+// =============================================================================
+// 编辑器暗色适配（2026-10-28）
+//
+// 背景：后台的文章正文与历史版本快照都用 WangEditor 渲染（ArticleDetailDrawer 的
+// `<editor :read-only="true">`），而它自带一套**亮色 prism 主题**——
+// 代码块是近白底（--w-e-textarea-slight-bg-color: #f5f2f0）+ 亮色 token（#07a 等），
+// 在暗色模式下是一大块刺眼白斑。
+//
+// 解法：只在 html.dark 下重定义 WangEditor 的 CSS 变量（它把配色收在一处）
+// + 覆盖 prsim token 色。色值取 GitHub Dark，与 blog-web 前台高亮同一套口径，
+// 两端看同一段代码不会出现两套配色。浅色主题完全不动。
+// =============================================================================
+
+html.dark {
+  // —— 编辑器基础变量：WangEditor 的底色/边框/文字全部由它们驱动 ——
+  --w-e-textarea-bg-color: var(--el-bg-color);
+  --w-e-textarea-color: var(--el-text-color-primary);
+  --w-e-textarea-border-color: var(--el-border-color);
+  --w-e-textarea-slight-border-color: var(--el-border-color);
+  --w-e-textarea-slight-color: var(--el-text-color-placeholder);
+  // 代码块与引用块的底：用 fill-color（比页面底亮一档），既成块又不刺眼
+  --w-e-textarea-slight-bg-color: var(--el-fill-color);
+  --w-e-textarea-selected-border-color: var(--el-color-primary);
+  --w-e-toolbar-bg-color: var(--el-bg-color);
+  --w-e-toolbar-color: var(--el-text-color-regular);
+  --w-e-toolbar-active-color: var(--el-text-color-primary);
+  --w-e-toolbar-active-bg-color: var(--el-fill-color);
+  --w-e-toolbar-disabled-color: var(--el-text-color-disabled);
+  --w-e-toolbar-border-color: var(--el-border-color);
+  --w-e-modal-button-bg-color: var(--el-fill-color);
+  --w-e-modal-button-border-color: var(--el-border-color);
+
+  // —— 代码块内的 prism token 色 ——
+  // 亮色那套（#07a / #690 / #905）在 #303030 上对比度不足，换成 GitHub Dark
+  .w-e-text-container [data-slate-editor] {
+    .token.prolog,
+    .token.punctuation,
+    .token.comment {
+      color: #8b949e;
+    }
+
+    .token.tag {
+      color: #7ee787;
+    }
+
+    .token.string,
+    .token.url,
+    .token.attr-value {
+      color: #a5d6ff;
+    }
+
+    .token.keyword,
+    .token.deleted {
+      color: #ff7b72;
+    }
+
+    .token.function,
+    .token.inserted {
+      color: #d2a8ff;
+    }
+
+    .token.variable,
+    .token.class-name,
+    .token.attr-name {
+      color: #ffa657;
+    }
+
+    .token.number,
+    .token.boolean,
+    .token.constant,
+    .token.builtin {
+      color: #79c0ff;
+    }
+  }
+
+  // 代码块右上角的「复制」钮：默认白底 + #666 字，深色下是一块亮斑
+  .w-e-text-container [data-slate-editor] pre.w-e-code-block .w-e-code-block-copy-button {
+    background-color: var(--el-bg-color-overlay);
+    border-color: var(--el-border-color);
+    color: var(--el-text-color-regular);
+  }
+}
