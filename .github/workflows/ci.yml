@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [6.X-Vue]
   pull_request:
 
 jobs:
@@ -24,6 +25,11 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      # 门禁：lint + 构建。typecheck（vue-tsc）尚未纳入门禁——
+      # S23 记录"未跑 vue-tsc"，基线未验证前不设卡点，避免把已有报错当成本次回归。
+      - name: Lint
+        run: pnpm lint
 
       - name: Build
         run: pnpm build
