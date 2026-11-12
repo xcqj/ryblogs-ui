@@ -111,9 +111,10 @@ const userStore = useUserStore();
 const router = useRouter();
 const { t } = useI18n();
 
+// 不预填任何账号口令：后台公网可达，预填等同把默认凭据写在页面上
 const loginForm = ref<LoginData>({
-  username: 'admin',
-  password: 'admin123',
+  username: '',
+  password: '',
   rememberMe: false,
   code: '',
   uuid: ''
