@@ -45,13 +45,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 构建期把 .env.production 的 VITE_* 内联进产物（含 client_id 与 RSA 公钥），
-      # 换密钥必须重新构建镜像，不能靠运行时注入
+      # 构建期把 VITE_* 内联进产物（含 client_id 与 RSA 密钥对），
+      # 换密钥必须重新构建镜像，不能靠运行时注入。
+      # RSA 两项来自仓库 Secrets（不再入库），缺失时产物无法走接口加密链路。
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
+          build-args: |
+            VITE_APP_RSA_PUBLIC_KEY=${{ secrets.VITE_APP_RSA_PUBLIC_KEY }}
+            VITE_APP_RSA_PRIVATE_KEY=${{ secrets.VITE_APP_RSA_PRIVATE_KEY }}
           tags: |
             ${{ env.IMAGE }}:${{ steps.meta.outputs.version }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.sha }}

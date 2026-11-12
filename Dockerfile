@@ -9,7 +9,8 @@
 # 因此 nginx.conf 必须提供 location /prod-api/ 反代到 backend —— 改一边必须改另一边。
 #
 # RSA 公私钥与 client_id 是**构建期内联**进产物的（VITE_ 前缀），不是运行时注入；
-# 换密钥必须重新构建镜像。
+# 换密钥必须重新构建镜像。RSA 两项通过 build-arg 传入（compose 的 admin.build.args），
+# 仓库内不保留任何密钥字面值。
 # =============================================================================
 
 # ---------- 构建阶段 ----------
@@ -27,6 +28,12 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 COPY . .
+# RSA 密钥构建期注入：Vite 中「执行前已存在的环境变量」优先级高于 .env 文件，
+# 因此 .env.production 只留注释、真实值由 build-arg 提供（缺省为空 → 产物无法走加密链路）。
+ARG VITE_APP_RSA_PUBLIC_KEY=
+ARG VITE_APP_RSA_PRIVATE_KEY=
+ENV VITE_APP_RSA_PUBLIC_KEY=$VITE_APP_RSA_PUBLIC_KEY \
+    VITE_APP_RSA_PRIVATE_KEY=$VITE_APP_RSA_PRIVATE_KEY
 # vite build --mode production（见 package.json scripts.build），产出 dist/
 RUN pnpm build
 
